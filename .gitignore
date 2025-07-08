@@ -1,0 +1,15 @@
+# ignore data folder
+data/
+checkpoints/
+outputs/
+
+# ignore some extensions too
+__pycache__/
+*.png
+*.pyc
+*.pkl
+*.log
+.env
+venv/
+.idea/
+.DS_Store

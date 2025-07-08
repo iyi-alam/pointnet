@@ -27,9 +27,10 @@ class ModelNet(Dataset):
             if os.path.isdir(p):
                 object_list.append(elem)
                 for filename in os.listdir(p):
-                    file_paths.append(
-                        os.path.join(p, filename)
-                    )
+                    if filename.__contains__(".off"):
+                        file_paths.append(
+                            os.path.join(p, filename)
+                        )
 
         np.random.shuffle(file_paths)
         obj_to_key = {obj_name: label for label, obj_name in enumerate(object_list)}
@@ -47,7 +48,9 @@ class ModelNet(Dataset):
         if self.transform:
             points = self.transform(points)
         
-        return points, torch.tensor(label)
+        points = points.squeeze(0)
+        
+        return points.to(torch.float32), torch.tensor(label)
     
     def sample_points_from_off(self, file_path, n_points=1024):
         mesh = trimesh.load(file_path)
@@ -76,7 +79,7 @@ class Augmentation:
         points -= points.mean(axis=0)  
         scale = np.max(np.linalg.norm(points, axis=1))  # farthest point from origin
         points /= scale
-        return points 
+        return points
 
 
 def get_train_transform():
@@ -85,6 +88,13 @@ def get_train_transform():
         aug.normalize,
         aug.rotate,
         aug.translate,
+        transforms.ToTensor()
+    ])
+
+def get_test_transform():
+    aug = Augmentation(max_rotate=10, pos_noise_std=0.02)
+    return transforms.Compose([
+        aug.normalize,
         transforms.ToTensor()
     ])
     
@@ -114,7 +124,7 @@ if __name__ == "__main__":
     dataroot = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ModelNet10/ModelNet10"))
     train_transform = get_train_transform()
     
-    modelnet = ModelNet(dataroot=dataroot, transform=train_transform)
+    modelnet = ModelNet(dataroot=dataroot, transform=train_transform, dset="test")
     print(len(modelnet.file_paths))
     print(modelnet.obj_to_key)
     point, label = modelnet.__getitem__(10)
