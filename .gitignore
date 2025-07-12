@@ -1,6 +1,7 @@
 # ignore data folder
 data/
 checkpoints/
+checkpoints_pp/
 outputs/
 
 # ignore some extensions too

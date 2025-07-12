@@ -129,7 +129,8 @@ class LossFunc(nn.Module):
         self.lamda = lamda
         self.celoss = nn.CrossEntropyLoss()
     
-    def forward(self, preds, target, matA, matB):
+    def forward(self, preds, target):
+        preds, matA, matB = preds
         celoss = self.celoss(preds, target)
         batch_size = matA.shape[0]
         idA = torch.eye(matA.shape[-1], device = matA.device).repeat(batch_size,1,1)
@@ -139,7 +140,10 @@ class LossFunc(nn.Module):
         
         return (celoss + self.lamda * reg_loss)/float(batch_size)
         
-
+def accuracy(preds, target):
+    preds = torch.argmax(preds[0], dim=1)
+    correct = torch.sum(preds == target)
+    return correct.item()
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -161,11 +165,12 @@ if __name__ == "__main__":
     # print(out.shape)
 
     model = PointNet(num_classes=10).to(device)
-    out, matA, matB = model(points)
+    preds = model(points)
+    out, matA, matB = preds
     print(out.shape, matA.shape, matB.shape)
     #print(matA.device)
 
     # Test working of loss functions
     criterion = LossFunc(lamda=0.02)
-    loss = criterion(out, label, matA, matB)
+    loss = criterion(preds, label)
     print(loss)
