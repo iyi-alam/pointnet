@@ -70,10 +70,6 @@ def train_fn(model: torch.nn.Module, train_loader: DataLoader, test_loader: Data
             test_acc = correct_count/total_count * 100
             train_records["test_loss"].append(test_loss)
             train_records["test_acc"].append(test_acc)
-        
-        # print some of the records
-        print(f"Epoch: {epoch+1}/{num_epochs} | train loss: {train_loss:.4f} | \
-               test_loss: {test_loss:.4f} | train acc: {train_acc:.4f} | test_acc: {test_acc:.4f}")
 
         if scheduler:
             scheduler.step()
@@ -81,12 +77,13 @@ def train_fn(model: torch.nn.Module, train_loader: DataLoader, test_loader: Data
         # Save best model
         if test_acc > best_val_acc:
             best_val_acc = test_acc
-            save_path = os.path.join(savedir, "best_model.pth")
-            save_dict = {
-                "model": model.state_dict(),
-                "train_records": train_records
-            }
-            torch.save(save_dict, save_path)
+            if savedir:
+                save_path = os.path.join(savedir, "best_model.pth")
+                save_dict = {
+                    "model": model.state_dict(),
+                    "train_records": train_records
+                }
+                torch.save(save_dict, save_path)
 
         # Save models after regular intervals
         if savedir and (epoch+1)%5 == 0:
@@ -96,6 +93,12 @@ def train_fn(model: torch.nn.Module, train_loader: DataLoader, test_loader: Data
                 "train_records": train_records
             }
             torch.save(save_dict, save_path)
+
+        # print some of the records
+        print(f"Epoch: {epoch+1}/{num_epochs} | train loss: {train_loss:.4f} | \
+               train acc: {train_acc:.4f} | test_acc: {test_acc:.4f} | best acc: {best_val_acc:.4f}")
+
+        
 
 def load_model(model: torch.nn.Module, checkpt_path):
     load_dict = torch.load(checkpt_path, weights_only=False)
@@ -114,6 +117,7 @@ def argument_parser():
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_classes", type=int, default=10)
     parser.add_argument("--resume_from", type=int, default=None)
+    parser.add_argument("--device_index", type=int, default=0)
     
     return parser.parse_args()
 
@@ -121,8 +125,10 @@ def argument_parser():
 
 if __name__ == "__main__":
     print(main_dir)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args = argument_parser()
+    device = torch.device(f"cuda:{args.device_index}" if torch.cuda.is_available() else "cpu")
+    print("Using Device: ", device)
+    
 
     # Get dataset and dataloader
     dataroot = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ModelNet10/ModelNet10"))
