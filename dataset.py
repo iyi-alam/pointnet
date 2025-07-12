@@ -7,6 +7,7 @@ import trimesh  #type:ignore
 import open3d as o3d #type:ignore
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
+import json
 
 
 class ModelNet(Dataset):
@@ -33,8 +34,22 @@ class ModelNet(Dataset):
                         )
 
         np.random.shuffle(file_paths)
-        obj_to_key = {obj_name: label for label, obj_name in enumerate(object_list)}
-        key_to_obj = {label: obj_name for label, obj_name in enumerate(object_list)}
+
+        json_path = os.path.join(self.dataroot, "modelnet10_labels.json")
+
+        if os.path.exists(json_path):
+            # Load saved mappings
+            with open(json_path, "r") as f:
+                obj_to_key = json.load(f)
+            key_to_obj = {v: k for k, v in obj_to_key.items()}
+        else:
+            # Create mappings and save them
+            obj_to_key = {obj_name: label for label, obj_name in enumerate(object_list)}
+            key_to_obj = {label: obj_name for label, obj_name in enumerate(object_list)}
+
+            # Save obj_to_key to JSON
+            with open(json_path, "w") as f:
+                json.dump(obj_to_key, f, indent=4)
         return file_paths, obj_to_key, key_to_obj
     
     def __len__(self):

@@ -134,7 +134,7 @@ def plot_groups(grouped_pts):
     plt.show()
 
 def sample_and_group(xyz: torch.Tensor, features: torch.Tensor,
-                     npoints, nsamples, radius) -> tuple[torch.Tensor, torch.Tensor]:
+                     npoints, nsamples, radius): # -> tuple[torch.Tensor, torch.Tensor]:
     """
     xyz: co-ordinates of points of shape B x N x 3
     features: features of each point of shape B x N x D

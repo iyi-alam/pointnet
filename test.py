@@ -109,5 +109,3 @@ if __name__ == "__main__":
                        device = device)
     
     print("Accuracy on test set: ", test_acc)
-
-    
