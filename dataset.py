@@ -21,7 +21,7 @@ class ModelNet(Dataset):
     
     def prepare_file_list(self):
         file_paths = []
-        subfolders = os.listdir(self.dataroot)
+        subfolders = sorted(os.listdir(self.dataroot))
         object_list = []
         for elem in subfolders:
             p = os.path.join(self.dataroot, elem, self.dset)
