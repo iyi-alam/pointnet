@@ -4,6 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from functools import partial
 
+SEED = 1204
+np.random.seed(SEED)
+torch.random.manual_seed(SEED)
+torch.manual_seed(SEED)
+
 
 def index_points_(points: torch.tensor, idx: torch.tensor):
     D = points.shape[-1]

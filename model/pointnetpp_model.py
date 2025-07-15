@@ -7,6 +7,10 @@ import torch
 import torch.nn as nn
 from pointnetpp_utils import PointSetAbstraction
 
+SEED = 1204
+torch.random.manual_seed(SEED)
+torch.manual_seed(SEED)
+
 class PointNetPlusPlus(nn.Module):
     def __init__(self, num_classes, in_channels):
         super().__init__()

@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
 
+SEED = 1204
+torch.random.manual_seed(SEED)
+torch.manual_seed(SEED)
+
 class Tnet(nn.Module):
     def __init__(self, k=3):
         super().__init__()
