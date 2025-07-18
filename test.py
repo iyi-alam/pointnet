@@ -2,11 +2,13 @@ import torch
 import matplotlib.pyplot as plt
 import os
 from tqdm import tqdm
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 import model.pointnet as pointnet
 import model.pointnetpp_model as pointnet_pp
 import dataset
 import argparse
+import numpy as np
+from cad_visualizer import plot_3d_grid
 
 
 def load_model(model: torch.nn.Module, checkpt_path):
@@ -55,9 +57,11 @@ def test_fn(model: torch.nn.Module, test_loader: DataLoader,
     with torch.no_grad():
         for points, labels in tqdm(test_loader, total=len(test_loader), desc = "running test loop..."):
             points, labels = points.to(device), labels.to(device)
+            #breakpoint()
             preds = model(points)
             correct_count += accuracy(preds, labels)
             total_count += labels.shape[0]
+            #print(f"Correct: {correct_count}/{total_count}")
         
         test_acc = correct_count/total_count * 100
     
@@ -66,6 +70,48 @@ def test_fn(model: torch.nn.Module, test_loader: DataLoader,
         generate_plots(train_records=train_records, save_dir=savedir)
 
     return test_acc
+
+def plot_preds(model: torch.nn.Module, test_dset: dataset.ModelNet, device, checkpoint_dir=None, savedir = None, plot_name = None):
+    if checkpoint_dir:
+        train_records = load_model(model, checkpoint_dir)
+
+    total_files = len(test_dset)
+    random_idx = np.random.choice(list(range(total_files)), replace=False, size=32)
+
+    file_paths = []
+    pcs = []
+    labels = []
+
+    for idx in random_idx:
+        file_paths.append(test_dset.file_paths[idx])
+        pc, label = test_dset[idx]
+        pcs.append(pc)
+        labels.append(label)
+    
+    pcs = torch.stack(pcs, dim=0)
+    labels = torch.stack(labels, dim = 0)
+    with torch.no_grad():
+        pcs, labels = pcs.to(device), labels.to(device)
+        preds = model(pcs)
+    
+    #print(pointnet.accuracy(preds, labels))
+
+    if isinstance(preds, tuple):
+        preds = torch.argmax(preds[0], dim=-1)
+    else:
+        preds = torch.argmax(preds, dim=-1) # for pointnet++ model
+    titles = [f"Target: {test_dset.key_to_obj[labels[i].item()]}\nPredicted: {test_dset.key_to_obj[preds[i].item()]}" for i in range(32)]
+    # print(titles)
+    # print(preds, labels)
+    idxes = list(range(32))
+    np.random.shuffle(idxes)
+    file_paths = [file_paths[i] for i in idxes[:8]]
+    titles = [titles[i] for i in idxes[:8]]
+    
+    plot_3d_grid(file_paths=file_paths, titles=titles, savedir=savedir, plot_name=plot_name)
+    
+
+    
 
 def argument_parser():
     parser = argparse.ArgumentParser()
@@ -101,11 +147,14 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError("The specified model doesn't exist")
 
-    test_acc = test_fn(model = model,
-                       test_loader=test_loader,
-                       accuracy=accuracy,
-                       checkpoint_dir=args.checkpoint_path,
-                       savedir=args.output_dir,
-                       device = device)
+    # test_acc = test_fn(model = model,
+    #                    test_loader=test_loader,
+    #                    accuracy=accuracy,
+    #                    checkpoint_dir=args.checkpoint_path,
+    #                    savedir=args.output_dir,
+    #                    device = device)
     
-    print("Accuracy on test set: ", test_acc)
+    # print("Accuracy on test set: ", test_acc)
+
+    # Get a sample prediction plot
+    plot_preds(model=model, test_dset=test_dataset, device=device, checkpoint_dir=args.checkpoint_path, savedir=args.output_dir, plot_name=args.model_name)

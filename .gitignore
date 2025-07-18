@@ -2,11 +2,12 @@
 data/
 checkpoints/
 checkpoints_pp/
-outputs/
+outputs/loss_acc_plot.png
+outputs/modelnet_grid.png
 
 # ignore some extensions too
 __pycache__/
-*.png
+#*.png
 *.pyc
 *.pkl
 *.log
