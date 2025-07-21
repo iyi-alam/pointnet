@@ -147,14 +147,14 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError("The specified model doesn't exist")
 
-    # test_acc = test_fn(model = model,
-    #                    test_loader=test_loader,
-    #                    accuracy=accuracy,
-    #                    checkpoint_dir=args.checkpoint_path,
-    #                    savedir=args.output_dir,
-    #                    device = device)
+    test_acc = test_fn(model = model,
+                       test_loader=test_loader,
+                       accuracy=accuracy,
+                       checkpoint_dir=args.checkpoint_path,
+                       savedir=args.output_dir,
+                       device = device)
     
-    # print("Accuracy on test set: ", test_acc)
+    print("Accuracy on test set: ", test_acc)
 
     # Get a sample prediction plot
     plot_preds(model=model, test_dset=test_dataset, device=device, checkpoint_dir=args.checkpoint_path, savedir=args.output_dir, plot_name=args.model_name)

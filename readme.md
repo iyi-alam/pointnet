@@ -57,4 +57,12 @@ python3 test.py --model_name pointnet --checkpoint_path path/to/model/checkpoint
 python3 test.py --model_name pointnet++ --checkpoint_path path/to/model/checkpoint.pth
 ```
 
+> Prediction Outputs
 
+![Pointnet Predictions](outputs/pointnet.png "PointNet Predictions")
+
+*Figure: 1 - Pointnet Predictions*
+
+![Pointnet++ Predictions](outputs/pointnet++.png "PointNet++ Predictions")
+
+*Figure: 2 - Pointnet++ Predcitions*
